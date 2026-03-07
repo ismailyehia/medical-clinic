@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@theme {
+  --color-medical-blue: #0284c7;
+  --color-medical-light: #e0f2fe;
+  --color-medical-dark: #0f172a;
+}
