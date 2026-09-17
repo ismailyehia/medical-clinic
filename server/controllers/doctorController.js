@@ -5,12 +5,25 @@ const { Doctor, User, Specialization, Appointment, Patient } = require('../model
 // @access  Public
 const getDoctors = async (req, res) => {
     try {
-        const doctors = await Doctor.findAll({
+        let doctors = await Doctor.findAll({
             include: [
                 { model: User, attributes: ['name', 'email'] },
                 { model: Specialization, attributes: ['name'] }
             ]
         });
+
+        // If no doctors exist, auto-seed them and fetch again
+        if (doctors.length === 0) {
+            const autoSeed = require('../utils/autoSeed');
+            await autoSeed();
+            doctors = await Doctor.findAll({
+                include: [
+                    { model: User, attributes: ['name', 'email'] },
+                    { model: Specialization, attributes: ['name'] }
+                ]
+            });
+        }
+
         res.json(doctors);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
