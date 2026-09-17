@@ -74,6 +74,11 @@ const startServer = async () => {
         // alter: true will update table schemas to match models
         await sequelize.sync({ alter: true });
         console.log('Database tables synced successfully.');
+        
+        // Auto-seed database if empty
+        const autoSeed = require('./utils/autoSeed');
+        await autoSeed();
+        
     } catch (error) {
         console.error('Database sync error:', error.message);
     }

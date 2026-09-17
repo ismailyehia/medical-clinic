@@ -1,24 +1,15 @@
-/**
- * Database Seed Script
- * 
- * Creates: 1 Admin, Specializations, and 3 Sample Doctors
- * 
- * Usage:
- *   node seed.js
- * 
- * Make sure your .env file is configured with the correct database credentials.
- */
-
 const bcrypt = require('bcryptjs');
-const { connectDB } = require('./config/db');
-const { sequelize, User, Specialization, Doctor, Patient } = require('./models');
+const { User, Specialization, Doctor } = require('../models');
 
-const seed = async () => {
+const autoSeed = async () => {
     try {
-        await connectDB();
-        await sequelize.sync({ alter: true });
+        const doctorCount = await Doctor.count();
+        if (doctorCount > 0) {
+            console.log('Database already has doctors. Skipping auto-seed.');
+            return;
+        }
 
-        console.log('\n🌱 Starting database seed...\n');
+        console.log('\n🌱 Auto-seeding database with initial data...\n');
 
         // ========== 1. Create Specializations ==========
         const specializations = [
@@ -37,12 +28,10 @@ const seed = async () => {
         for (const name of specializations) {
             await Specialization.findOrCreate({ where: { name } });
         }
-        console.log(`✅ ${specializations.length} Specializations created`);
 
         // ========== 2. Create Admin User ==========
         const salt = await bcrypt.genSalt(10);
-
-        const [adminUser] = await User.findOrCreate({
+        await User.findOrCreate({
             where: { email: 'admin@mediclinic.com' },
             defaults: {
                 name: 'Admin',
@@ -51,9 +40,6 @@ const seed = async () => {
                 role: 'admin',
             }
         });
-        console.log('✅ Admin user created');
-        console.log('   📧 Email:    admin@mediclinic.com');
-        console.log('   🔑 Password: admin123');
 
         // ========== 3. Create Sample Doctors ==========
         const doctors = [
@@ -111,26 +97,10 @@ const seed = async () => {
             });
         }
 
-        console.log(`✅ ${doctors.length} Doctors created`);
-        console.log('   📧 All doctors use password: doctor123');
-        console.log('');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('  🎉 Seed completed successfully!');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('');
-        console.log('  Login credentials:');
-        console.log('  ─────────────────');
-        console.log('  Admin:   admin@mediclinic.com   / admin123');
-        console.log('  Doctor:  ahmed@mediclinic.com   / doctor123');
-        console.log('  Doctor:  fatima@mediclinic.com  / doctor123');
-        console.log('  Doctor:  mohamed@mediclinic.com / doctor123');
-        console.log('');
-
-        process.exit(0);
+        console.log('✅ Auto-seed completed successfully!');
     } catch (error) {
-        console.error('❌ Seed failed:', error.message);
-        process.exit(1);
+        console.error('❌ Auto-seed failed:', error.message);
     }
 };
 
-seed();
+module.exports = autoSeed;
