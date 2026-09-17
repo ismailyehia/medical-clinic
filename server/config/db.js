@@ -7,7 +7,8 @@ const dbPassword = process.env.DB_PASS && process.env.DB_PASS.trim() !== ''
   ? process.env.DB_PASS
   : null;
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isLocalhost = !process.env.DB_HOST || process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
+const needsSSL = !isLocalhost; // Aiven and other cloud providers require SSL
 
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'clinic_db',
@@ -18,8 +19,7 @@ const sequelize = new Sequelize(
     port: process.env.DB_PORT || 3306,
     dialect: process.env.DB_DIALECT || 'mysql',
     logging: false,
-    // SSL required by cloud MySQL providers like Aiven
-    ...(isProduction && {
+    ...(needsSSL && {
       dialectOptions: {
         ssl: {
           require: true,

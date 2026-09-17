@@ -88,6 +88,7 @@ const autoSeed = async () => {
             await Doctor.findOrCreate({
                 where: { user_id: docUser.id },
                 defaults: {
+                    name: doc.name,
                     user_id: docUser.id,
                     specialization_id: spec.id,
                     phone: doc.phone,
